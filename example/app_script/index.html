@@ -1,0 +1,282 @@
+<!--
+  Copyright 2017 Google Inc.
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+-->
+
+<!DOCTYPE HTML>
+<html>
+  <head>
+    <title>YouTube Channel Section Targeter</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.7/angular.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.7/angular-animate.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.7/angular-resource.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.7/angular-aria.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.7/angular-messages.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.7/angular-sanitize.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/angular_material/1.1.1/angular-material.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.2/jquery.min.js"></script>
+    <script src="https://apis.google.com/js/client.js?onload=googleApiClientReady"></script>
+    <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/angular_material/1.1.1/angular-material.min.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet"/>
+    <?!= include('script'); ?>
+    <?!= include('css'); ?>
+  </head>
+  <body ng-app="channelTargeter"
+        ng-controller="ChannelTargeterCtrl as ctrl"
+        class="md-body-1" layout="column">
+    <md-toolbar class="md-toolbar-tools">
+      <h1>
+        <a ng-href="#/">YouTube Channel Section Targeter</a>
+      </h1>
+    </md-toolbar>
+    <div class="page-view" layout="column">
+      <div id="top"></div>
+      <div class="content" role="main">
+        <md-tabs md-dynamic-height="" md-border-bottom="" md-selected="ctrl.selectedTab">
+          <md-tab label="authentication">
+            <md-content class="md-padding">
+              <hr>
+              <div>
+                This application requires access to your YouTube account.
+                <br>
+                Please authorize to choose your account.
+              </div>
+              <hr>
+              <br>
+              <div>
+                <md-button class="md-raised md-primary" ng-click="ctrl.onAuthorize()">
+                  Authorize
+                </md-button>
+                <md-button class="md-raised" ng-click="ctrl.onRevokeAccess()">
+                  Revoke authorization
+                </md-button>
+              </div>
+            </md-content>
+          </md-tab>
+          <md-tab label="select channel">
+            <md-content ng-hide="ctrl.authentificated">
+              <md-card layout-padding ng-click="ctrl.selectedTab=0">
+                <div>
+                  Please authenticate in the <em>AUTHENTICATION</em> tab first.
+                </div>
+              </md-card>
+            </md-content>
+            <div ng-show="ctrl.authentificated">
+              <br>
+              <div>
+                Enter your channel ID (channel ID looks like: UC01234567890xXxXxXxXxXx)
+              </div>
+              <br>
+              <div>
+                <i class="material-icons" style="vertical-align: middle;">warning</i>
+                Do not modify channel sections in the user interface YouTube website after
+                using the tool (reorder, change type, style, etc). Otherwise your targeting options
+                will be deleted.
+              </div>
+              <br>
+              <md-input-container class="md-block">
+                <label>Channel ID</label>
+                <input ng-model="ctrl.channel_id" placeholder="Leave empty to use your own channel">
+              </md-input-container>
+              <md-input-container class="md-block">
+                <label>Content Owner (Optional)</label>
+                <input ng-model="ctrl.contentOwner">
+              </md-input-container>
+              <md-button class="md-raised md-primary" ng-click="ctrl.onLoadSections()">
+                Retrieve sections
+              </md-button>
+              <md-button class="md-raised" ng-click="ctrl.loadOwnChannelId()">
+                Get default channel ID
+              </md-button>
+            </div>
+          </md-tab>
+          <md-tab label="targeter">
+            <md-content ng-show="!ctrl.authentificated">
+              <md-card layout-padding ng-click="ctrl.selectedTab=0">
+                <div>
+                  Please authenticate in the <em>AUTHENTICATION</em> tab first.
+                </div>
+              </md-card>
+            </md-content>
+            <md-content ng-show="ctrl.authentificated && !ctrl.sectionsLoaded">
+              <md-card layout-padding ng-click="ctrl.selectedTab=1">
+                <div>
+                  Retrieve sections first in the previous tab.
+                </div>
+              </md-card>
+            </md-content>
+            <md-content ng-show="ctrl.authentificated && ctrl.sectionsLoaded && ctrl.sections === null">
+              <md-card layout-padding>
+                <div>
+                  Loading...
+                  Please retry if it takes too long.
+                </div>
+              </md-card>
+            </md-content>
+            <md-content ng-hide="ctrl.sections === null">
+              <div layout-padding layout="row" layout-align="start center">
+                <img class="thumbnail" ng-src="{{ctrl.channel.snippet.thumbnails.default.url}}">
+                <div class="channel-snippet" layout="column" flex="35">
+                  <div ng-bind="ctrl.channel.snippet.title"></div>
+                  <div>
+                    <a target="_blank" ng-href="https://www.youtube.com/channel/{{ctrl.channel.id}}"
+                       ng-bind="ctrl.channel.id"></a>
+                  </div>
+                </div>
+                <div id="submit-msg" ng-show="ctrl.submit.processing">
+                  Submitting: {{ctrl.submit.current}} of {{ctrl.submit.total}}
+                </div>
+              </div>
+              <md-card layout-padding ng-show="ctrl.isSectionListEmpty()">
+                <div>
+                  No sections found.<br>
+                  Please add a section first and make sure <em>Customize the layout of your channel
+                  </em> is activated on your YouTube channel page.
+                </div>
+              </md-card>
+              <md-progress-linear md-mode="determinate"
+                                  ng-show="ctrl.submit.processing"
+                                  value="{{ctrl.submit.current * 100.0 / ctrl.submit.total }}"></md-progress-linear>
+              <div ng-repeat="section in ctrl.sections">
+                <md-card class="md-padding" title="Section ID: {{section.id}}">
+                  <div layout="row">
+                    <md-input-container flex="10">
+                      <label>Position</label>
+                      <input ng-model="section.snippet.position">
+                    </md-input-container>
+                    <md-input-container flex>
+                      <label>Type</label>
+                      <md-select ng-model="section.snippet.type">
+                        <md-option ng-repeat="type in ctrl.sectionTypes" ng-value="type">
+                          {{type}}
+                        </md-option>
+                      </md-select>
+                    </md-input-container>
+                    <md-input-container flex>
+                      <label>Style</label>
+                      <md-select ng-model="section.snippet.style">
+                        <md-option ng-repeat="style in ctrl.sectionStyles" ng-value="style">
+                          {{style}}
+                        </md-option>
+                      </md-select>
+                    </md-input-container>
+                    <md-input-container flex ng-show="ctrl.typesWithTitle.hasOwnProperty(section.snippet.type)">
+                      <label>Title</label>
+                      <input ng-model="section.snippet.title">
+                    </md-input-container>
+                    <md-button ng-click="ctrl.onSectionRemove(section.id)">Remove</md-button>
+                  </div>
+                  <md-input-container ng-show="ctrl.ifShowContentDetails(section.id)">
+                    <label>Content details</label>
+                    <input ng-model="section.contentDetailsRaw"
+                           ng-disabled="!ctrl.ifShowContentDetails(section.id)"
+                           title="Only available for types: singlePlaylist, multiplePlaylists or multipleChannels">
+                  </md-input-container>
+                  <div id="targeting-settings-header" layout="row" flex>
+                    <div class="tooltip" flex="10" layout="row" >
+                      <div class="tooltiptitle">Targeting:</div>
+                      <div class="tooltiptext">For a complete list of available language/region/country code, see HELP tab</div>
+                    </div>
+                  </div>
+                  <div ng-repeat="targetingType in ctrl.targetingTypes"
+                       class="targeting-settings" layout="row">
+                    <md-checkbox ng-model="section.targetingRaw[targetingType].enabled"
+                                 class="targeting-settings md-warn md-align-top-left"
+                                 aria-label="{{targetingType}}" flex="15">
+                      {{targetingType}}
+                    </md-checkbox>
+                    <md-input-container flex ng-show="section.targetingRaw[targetingType].enabled">
+                      <label class="md-no-float"></label>
+                      <input ng-model="section.targetingRaw[targetingType].value"
+                             ng-show="section.targetingRaw[targetingType].enabled"
+                             placeholder="Value [Comma separated], see HELP tab for more info">
+                    </md-input-container>
+                  </div>
+                </md-card>
+              </div>
+              <div layout="row" flex>
+                <md-button class="md-raised" ng-click="ctrl.onSectionAdd()">Add a section</md-button>
+                <span flex></span>
+                <md-button class="md-raised" ng-click="ctrl.onReset()">Reset</md-button>
+                <md-button class="md-raised md-primary" ng-click="ctrl.onSubmit()" ng-disable="sections.length == 0">Submit changes</md-button>
+              </div>
+            </md-content>
+          </md-tab>
+          <md-tab label="help">
+            <md-card id="content-help">
+              <h2>Step by step guide on how to usethe Locomotive App</h2>
+              <ol>
+                  <li>
+                    The first thing you need to do is to authorize the app to work on your behalf.
+                    IMPORTANT: If you have different YT Channels linked to the same Gmail address,
+                    make sure to authorize the correct one.</li>
+
+                  <li>
+                    Click on "Retrieve Channel Sections": you should then see the details of all
+                    the sections already present in your channel</li>
+
+                  <li>
+                    Now you can modify and target each section.</li>
+
+                  <ol>
+                    <li>
+                      You can modify: title (N.B. not all sections have editable title), position,
+                      type, style and targeting.
+                    </li>
+
+                    <li>
+                      To reorder the sections, just adjust the position number. You can't write
+                      the same number more than once.
+                    </li>
+
+                    <li>
+                      You can target a section by ticking the box(es) and adding the relevant value:
+                    </li>
+
+                    <ul>
+                      <li>
+                        <b>languages:</b> populate the targeting value with a list of application
+                        languages for which the channel section is visible. Use the
+                        <a target="_blank" href= "https://www.google.com/url?q=https://developers.google.com/apis-explorer/%23p/youtube/v3/youtube.i18nLanguages.list?part%3Dsnippet%26_h%3D1%26&amp;sa=D&amp;ust=1475590971126000&amp;usg=AFQjCNHafYgaBDs4bgwq7zbxjA4BXcK_Aw">
+                        i18nLanguages.list</a> (click and press "Authorize and Execute") method to
+                        retrieve a list of application languages that YouTube supports.
+                      </li>
+                      <li>
+                        <b>regions:</b> populate the targeting value with a list of content regions
+                        where the channel section is visible. Use the <a target="_blank" href="https://www.google.com/url?q=https://developers.google.com/apis-explorer/%23p/youtube/v3/youtube.i18nRegions.list?part%3Dsnippet%26_h%3D2%26&amp;sa=D&amp;ust=1475590971128000&amp;usg=AFQjCNFYoik1ElFULrwby2irIUr5d9JV1w">
+                        i18nRegions.list</a> (click and press Authorize and Execute") method to
+                        retrieve a list of content regions that YouTube supports.
+                      </li>
+                      <li><b>countries:</b> populate the targeting value with a list of
+                        <a target="_blank" href= "https://www.google.com/url?q=http://www.iso.org/iso/country_codes/iso_3166_code_lists/country_names_and_code_elements.htm&amp;sa=D&amp;ust=1475590971129000&amp;usg=AFQjCNEwDuhl8ZIMXiDTeeW8e_LFGkq-cQ">
+                        ISO 3166-1 alpha-2 country codes</a> where the channel section is visible.
+                      </li>
+                    </ul>
+                  </ol>
+                <li>
+                  Once done, click on "Submit Changes" at the end of the page. You should now see
+                  a confirmation pop up and your YT channel is now updated and targeted correctly.
+                </li>
+              </ol>
+              <p>
+                For any additional questions, consult the
+                <a target="_blank" href="">GitHub project page</a>
+              </p>
+            </md-card>
+          </md-tab>
+        </md-tabs>
+      </div>
+    </div>
+  </body>
+</html>

@@ -26,9 +26,9 @@ global channel with targeted channel sections instead of having individual
 channels for different languages/countries/regions.
 
 This advanced feature, however, is not available through the YouTube website
-user interface and only accessible through API. More details can be found
-on the [Google Developers website]
-(https://developers.google.com/youtube/v3/docs/channelSections).
+user interface and only accessible through API. More details can be found on the
+[Google Developers
+website](https://developers.google.com/youtube/v3/docs/channelSections).
 
 ## Project objective
 

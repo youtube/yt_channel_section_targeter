@@ -54,11 +54,14 @@ from the *File* menu then *Make a copy*. Be careful of sharing settings so only
 relevant users/groups have access. Sharing settings are accessible through
 *File*, then *Share*.
 
-#### 2 - Get the OAuth Client ID
+#### 2 - Enable API & get the OAuth Client ID
 
-Click on *Resources*, then *Cloud Platform project*. On the prompted dialog,
-click the project link highlighted in blue. This brings you to the associated
+Click *Resources*, then *Cloud Platform project*. On the prompted dialog, click
+the project link highlighted in blue. This brings you to the associated
 project's control panel.
+
+On the left, click *Dashboard* and find *Calendar API* on the right. Click it
+and then click *Enable* on top.
 
 On the left of the website, click *Credentials* and copy the *Client ID*
 shown on the right with the format "xxxx-xxxxxxxx.apps.googleusercontent.com".
@@ -222,3 +225,4 @@ Developers
 website](https://developers.google.com/youtube/v3/getting-started#quota).
 
 Copyright 2017 Google, Inc
+

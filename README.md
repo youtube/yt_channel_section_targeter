@@ -208,7 +208,7 @@ the current version on GitHub by simply copy pasting the related code or redo
 the deployment steps. If it is still not working, feel free to report it as a
 bug or try to fix it and contribute back to the code base.
 
-### I cannot find some buttons/fields mentionned in this document.
+### I cannot find some buttons/fields mentioned in this document.
 
 It is likely that the UI/document has changed, try to navigate and find the
 updated one. You are also welcome to update this document by contributing to the
@@ -217,7 +217,7 @@ project.
 ### Does this tool collect or send my information?
 
 No. This tool is standalone and doesn't require anything other than the public
-APIs from YouTube. User information or usage analystics of any kind are also not
+APIs from YouTube. User information or usage analytics of any kind are also not
 collected in anyway.
 
 ### Is there any limit on the usage of the tool?

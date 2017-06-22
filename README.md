@@ -1,5 +1,7 @@
 # YouTube Channel Section Targeter
 
+**This is not an official Google product.**
+
 ## Index
 
 -   [Background](#background)
